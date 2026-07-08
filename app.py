@@ -9,6 +9,7 @@ from PIL import Image
 import io
 import numpy as np
 import easyocr
+import traceback
 
 app = Flask(__name__)
 CORS(app)
@@ -27,7 +28,7 @@ def get_ocr():
     global ocr
     if ocr is None:
         print("📦 正在載入 EasyOCR (支援中文手寫)...")
-        # 'ch_sim' 是簡體中文（也支援大多數繁體字），'en' 是英文
+        # 使用 ch_sim 簡體中文（也支援繁體）和 en 英文
         ocr = easyocr.Reader(['ch_sim', 'en'], gpu=False)
         print("✅ EasyOCR 載入完成")
     return ocr
@@ -46,32 +47,38 @@ def index():
 def ocr_image():
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'error': '無數據'}), 400
+
         image_data = data.get('image')
         if not image_data:
             return jsonify({'error': '缺少圖片數據'}), 400
 
-        if ',' in image_data:
-            image_data = image_data.split(',')[1]
+        # 使用正則表達式安全地提取 Base64 部分
+        match = re.match(r'data:image/.+;base64,(.+)', image_data)
+        if match:
+            image_data = match.group(1)
+        # 如果沒有匹配，則假設已經是純 Base64，直接使用
 
+        # 解碼 Base64
         image_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(image_bytes))
-
-        # 轉為 numpy 陣列供 EasyOCR 使用
         img_np = np.array(image)
 
+        # 執行 OCR
         ocr_engine = get_ocr()
-        # detail=0 表示只回傳文字，不返回座標
-        result = ocr_engine.readtext(img_np, detail=0)
+        result = ocr_engine.readtext(img_np, detail=0)  # detail=0 只回傳文字
 
         full_text = '\n'.join(result)
         return jsonify({'text': full_text})
 
     except Exception as e:
         print(f"OCR 錯誤: {e}")
+        traceback.print_exc()  # 印出完整錯誤堆疊
         return jsonify({'error': str(e)}), 500
 
 # ================================================================
-# API: AI 智能批改（保持不變）
+# API: AI 智能批改
 # ================================================================
 @app.route('/api/ai-grade', methods=['POST'])
 def ai_grade():
@@ -85,6 +92,7 @@ def ai_grade():
     if not student_answers or not teacher_answers:
         return jsonify({'error': '缺少答案'}), 400
 
+    # 組合提示詞
     prompt = "你是一個嚴格且專業的老師，請逐題判斷學生的答案是否正確（考量語意是否正確，而非逐字完全相同），並給予簡短的評語（每個答案一句話）。\n\n"
     for i, (s, t) in enumerate(zip(student_answers, teacher_answers), 1):
         prompt += f"第{i}題 標準答案：{t}，學生答案：{s}\n"
@@ -115,6 +123,7 @@ def ai_grade():
         result = response.json()
         ai_message = result['choices'][0]['message']['content']
 
+        # 解析 JSON
         json_match = re.search(r'\{.*\}', ai_message, re.DOTALL)
         if json_match:
             parsed = json.loads(json_match.group())

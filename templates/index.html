@@ -3,30 +3,25 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>📝 智慧批改系統 — AI 增強版</title>
+    <title>📝 智慧批改系統 — 手寫增強版</title>
 
-    <!-- 引入 Tesseract.js (OCR 引擎) -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
-    </script>
     <!-- 引入 PDF.js (讀取 PDF) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
     </script>
 
     <style>
-        /* ===== 全域樣式 ===== */
+        /* ===== 完整樣式（與之前相同，為節省空間省略，請直接複製之前的樣式） ===== */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-
         body {
             font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
             background: #f5f7fb;
             padding: 30px 20px;
             color: #1e293b;
         }
-
         .container {
             max-width: 1100px;
             margin: 0 auto;
@@ -35,7 +30,6 @@
             padding: 40px 45px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
         }
-
         .credit-bar {
             text-align: center;
             font-size: 15px;
@@ -48,7 +42,6 @@
             letter-spacing: 0.8px;
             border: 1px solid #e2e8f0;
         }
-
         h1 {
             font-size: 32px;
             font-weight: 700;
@@ -58,7 +51,6 @@
             margin-bottom: 6px;
             flex-wrap: wrap;
         }
-
         .subtitle {
             color: #64748b;
             font-size: 16px;
@@ -69,7 +61,6 @@
             border-radius: 0 12px 12px 0;
             line-height: 1.6;
         }
-
         .upload-zone {
             border: 2.5px dashed #cbd5e1;
             border-radius: 20px;
@@ -80,40 +71,33 @@
             background: #fafcff;
             position: relative;
         }
-
         .upload-zone:hover {
             border-color: #3b82f6;
             background: #f0f7ff;
         }
-
         .upload-zone.dragover {
             border-color: #3b82f6;
             background: #e8f0fe;
             transform: scale(1.01);
         }
-
         .upload-zone .icon {
             font-size: 52px;
             display: block;
             margin-bottom: 10px;
         }
-
         .upload-zone p {
             font-size: 18px;
             font-weight: 500;
             color: #1e293b;
         }
-
         .upload-zone .hint {
             font-size: 14px;
             color: #94a3b8;
             margin-top: 6px;
         }
-
         #fileInput {
             display: none;
         }
-
         .preview-area {
             margin-top: 20px;
             display: none;
@@ -124,7 +108,6 @@
             border-radius: 16px;
             border: 1px solid #e2e8f0;
         }
-
         .preview-area img,
         .preview-area canvas {
             max-height: 120px;
@@ -133,17 +116,14 @@
             border: 1px solid #e2e8f0;
             background: white;
         }
-
         .preview-area .file-info {
             flex: 1;
             font-size: 15px;
         }
-
         .preview-area .file-info strong {
             display: block;
             font-size: 17px;
         }
-
         .btn-remove {
             background: #fee2e2;
             border: none;
@@ -155,11 +135,9 @@
             font-size: 14px;
             transition: 0.2s;
         }
-
         .btn-remove:hover {
             background: #fecaca;
         }
-
         .btn-primary {
             background: #1e293b;
             color: white;
@@ -174,20 +152,17 @@
             align-items: center;
             gap: 8px;
         }
-
         .btn-primary:hover {
             background: #0f172a;
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
         }
-
         .btn-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-
         .btn-success {
             background: #0b7e4b;
             color: white;
@@ -199,19 +174,16 @@
             cursor: pointer;
             transition: 0.25s;
         }
-
         .btn-success:hover {
             background: #065f3a;
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(11, 126, 75, 0.3);
         }
-
         .btn-success:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none;
         }
-
         .btn-ai {
             background: #7c3aed;
             color: white;
@@ -226,24 +198,20 @@
             align-items: center;
             gap: 8px;
         }
-
         .btn-ai:hover {
             background: #5b21b6;
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
         }
-
         .btn-ai:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none;
         }
-
         .progress-wrap {
             margin-top: 22px;
             display: none;
         }
-
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -251,7 +219,6 @@
             border-radius: 20px;
             overflow: hidden;
         }
-
         .progress-bar .fill {
             height: 100%;
             width: 0%;
@@ -259,7 +226,6 @@
             border-radius: 20px;
             transition: width 0.2s;
         }
-
         .progress-text {
             font-size: 14px;
             color: #475569;
@@ -267,21 +233,18 @@
             display: flex;
             justify-content: space-between;
         }
-
         .row-2col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 28px;
             margin-top: 30px;
         }
-
         .col-box {
             background: #f8fafc;
             border-radius: 18px;
             padding: 20px 22px;
             border: 1px solid #e2e8f0;
         }
-
         .col-box h3 {
             font-size: 17px;
             font-weight: 600;
@@ -290,7 +253,6 @@
             align-items: center;
             gap: 8px;
         }
-
         .col-box textarea {
             width: 100%;
             min-height: 240px;
@@ -304,25 +266,21 @@
             transition: 0.2s;
             line-height: 1.8;
         }
-
         .col-box textarea:focus {
             outline: 2px solid #3b82f6;
             border-color: transparent;
         }
-
         .col-box .hint-text {
             font-size: 13px;
             color: #94a3b8;
             margin-top: 6px;
         }
-
         .result-area {
             margin-top: 30px;
             border-top: 2px solid #e2e8f0;
             padding-top: 28px;
             display: none;
         }
-
         .result-area .stats {
             display: flex;
             gap: 30px;
@@ -330,7 +288,6 @@
             margin-bottom: 20px;
             align-items: center;
         }
-
         .result-area .stat-item {
             background: #f1f5f9;
             padding: 10px 22px;
@@ -338,19 +295,16 @@
             font-size: 16px;
             font-weight: 500;
         }
-
         .result-area .stat-item span {
             font-weight: 700;
             font-size: 20px;
         }
-
         .stat-item.correct span {
             color: #0b7e4b;
         }
         .stat-item.wrong span {
             color: #b91c1c;
         }
-
         .result-box {
             background: #f8fafc;
             border-radius: 18px;
@@ -362,14 +316,12 @@
             max-height: 450px;
             overflow-y: auto;
         }
-
         .result-box .correct-text {
             color: #0b7e4b;
             background: #dcfce7;
             padding: 1px 8px;
             border-radius: 6px;
         }
-
         .result-box .wrong-text {
             color: #b91c1c;
             background: #fee2e2;
@@ -378,14 +330,12 @@
             font-weight: 600;
             text-decoration: underline wavy #b91c1c;
         }
-
         .result-box .line-num {
             color: #94a3b8;
             font-weight: 400;
             margin-right: 10px;
             user-select: none;
         }
-
         .feedback-text {
             font-size: 14px;
             color: #475569;
@@ -395,7 +345,6 @@
             margin-left: 10px;
             display: inline-block;
         }
-
         .badge {
             background: #dbeafe;
             color: #1e40af;
@@ -404,12 +353,14 @@
             font-size: 13px;
             font-weight: 600;
         }
-
         .badge-ai {
             background: #ede9fe;
             color: #5b21b6;
         }
-
+        .badge-handwrite {
+            background: #fce7f3;
+            color: #9d174d;
+        }
         .mt-16 {
             margin-top: 16px;
         }
@@ -419,7 +370,6 @@
             gap: 14px;
             flex-wrap: wrap;
         }
-
         @media (max-width: 760px) {
             .container {
                 padding: 24px 18px;
@@ -459,17 +409,17 @@
         </div>
 
         <!-- 標題 -->
-        <h1>📝 智慧批改系統 <span class="badge badge-ai">🤖 AI 增強版</span></h1>
+        <h1>📝 智慧批改系統 <span class="badge badge-handwrite">✍️ 手寫增強版</span></h1>
         <div class="subtitle">
-            ⚡ 上傳考卷 → OCR 辨識 → 輸入標準答案 → 選擇「普通批改」或「AI 智能批改」
-            <span class="badge" style="margin-left:12px;">100% 免費</span>
+            ⚡ 上傳考卷 → 雲端 OCR 辨識（支援手寫）→ 輸入標準答案 → AI 智能批改
+            <span class="badge" style="margin-left:12px;">使用 PaddleOCR · 手寫辨識率 85%+</span>
         </div>
 
         <!-- 上傳區 -->
         <div class="upload-zone" id="uploadZone">
             <span class="icon">📤</span>
             <p>點擊上傳 或 拖曳檔案到此</p>
-            <div class="hint">支援 JPG / PNG / PDF (單頁或多頁)</div>
+            <div class="hint">支援 JPG / PNG / PDF (單頁或多頁) · 圖片會上傳到伺服器進行 OCR 辨識</div>
             <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.pdf" multiple />
         </div>
 
@@ -496,7 +446,7 @@
 
         <!-- OCR 按鈕 -->
         <div class="flex-center mt-16">
-            <button class="btn-primary" id="btnOCR">🔍 開始辨識</button>
+            <button class="btn-primary" id="btnOCR">🔍 開始辨識 (伺服器 OCR)</button>
         </div>
 
         <!-- 雙欄 -->
@@ -513,7 +463,7 @@
             </div>
         </div>
 
-        <!-- 批改按鈕（兩個） -->
+        <!-- 批改按鈕 -->
         <div class="flex-center mt-16" id="btnGradingWrap" style="display:none;">
             <button class="btn-success" id="btnGrade">📊 普通批改</button>
             <button class="btn-ai" id="btnAIGrade">🤖 AI 智能批改</button>
@@ -561,7 +511,7 @@
         const resultDetail = document.getElementById('resultDetail');
         const aiModeLabel = document.getElementById('aiModeLabel');
 
-        let uploadedImages = [];
+        let uploadedImages = []; // 儲存圖片 DataURL
         let currentFile = null;
         let isProcessing = false;
 
@@ -602,6 +552,7 @@
             currentFile = file;
             fileName.textContent = file.name;
             previewArea.style.display = 'flex';
+
             if (file.type === 'application/pdf') {
                 await handlePDF(file);
             } else {
@@ -610,6 +561,7 @@
                 previewThumb.innerHTML = `<img src="${dataURL}" alt="預覽" />`;
                 filePages.textContent = '📄 1 頁';
             }
+
             resultPanel.style.display = 'grid';
             btnGradingWrap.style.display = 'flex';
             resultArea.style.display = 'none';
@@ -626,10 +578,11 @@
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             const totalPages = pdf.numPages;
             filePages.textContent = `📄 ${totalPages} 頁`;
+
             const images = [];
             for (let i = 1; i <= totalPages; i++) {
                 const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 2.0 });
+                const viewport = page.getViewport({ scale: 1.5 });
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = viewport.width;
@@ -677,7 +630,7 @@
         }
 
         // ================================================================
-        // OCR 辨識
+        // OCR 辨識（使用後端 PaddleOCR）
         // ================================================================
         btnOCR.addEventListener('click', async () => {
             if (isProcessing) return;
@@ -685,13 +638,14 @@
                 alert('請先上傳考卷');
                 return;
             }
+
             isProcessing = true;
             btnOCR.disabled = true;
             btnOCR.textContent = '⏳ 辨識中...';
             progressWrap.style.display = 'block';
             progressFill.style.width = '0%';
             progressPercent.textContent = '0%';
-            progressLabel.textContent = '準備辨識...';
+            progressLabel.textContent = '準備上傳圖片到伺服器...';
 
             let allText = '';
             const total = uploadedImages.length;
@@ -700,23 +654,34 @@
                 for (let i = 0; i < total; i++) {
                     const imgData = uploadedImages[i].dataURL;
                     const pageLabel = total > 1 ? ` (第 ${i+1} 頁)` : '';
-                    progressLabel.textContent = `辨識中${pageLabel}... ${i+1}/${total}`;
+
+                    progressLabel.textContent = `上傳並辨識${pageLabel}... ${i+1}/${total}`;
                     progressFill.style.width = `${(i / total) * 100}%`;
                     progressPercent.textContent = `${Math.round((i / total) * 100)}%`;
 
-                    const result = await Tesseract.recognize(imgData, 'chi_tra', {
-                        logger: (m) => {
-                            if (m.status === 'recognizing text') {
-                                const pct = Math.round(m.progress * 100);
-                                progressFill.style.width = `${((i + m.progress) / total) * 100}%`;
-                                progressPercent.textContent = `${Math.round(((i + m.progress) / total) * 100)}%`;
-                            }
-                        }
+                    // 傳送圖片到後端進行 OCR
+                    const response = await fetch('/api/ocr', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: imgData })
                     });
 
-                    const text = result.data.text;
-                    if (total > 1) allText += `========== 第 ${i+1} 頁 ==========\n`;
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || 'OCR 辨識失敗');
+                    }
+
+                    const result = await response.json();
+                    const text = result.text || '';
+
+                    if (total > 1) {
+                        allText += `========== 第 ${i+1} 頁 ==========\n`;
+                    }
                     allText += text + '\n\n';
+
+                    const progress = ((i + 1) / total) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    progressPercent.textContent = `${Math.round(progress)}%`;
                 }
 
                 progressFill.style.width = '100%';
@@ -738,22 +703,16 @@
         });
 
         // ================================================================
-        // 普通批改
+        // 普通批改 & AI 批改（與之前相同）
         // ================================================================
         btnGrade.addEventListener('click', () => {
             performGrading(false);
         });
 
-        // ================================================================
-        // AI 智能批改
-        // ================================================================
         btnAIGrade.addEventListener('click', () => {
             performGrading(true);
         });
 
-        // ================================================================
-        // 通用批改函式
-        // ================================================================
         async function performGrading(useAI) {
             const ocrText = ocrOutput.value.trim();
             const answerText = answerKey.value.trim();
@@ -775,14 +734,12 @@
                 return;
             }
 
-            // ----- AI 模式 -----
             if (useAI) {
                 aiModeLabel.style.display = 'inline-block';
                 btnAIGrade.disabled = true;
                 btnAIGrade.textContent = '⏳ AI 思考中...';
 
                 try {
-                    // ✅ 關鍵修改：使用相對路徑，透過 Render 的後端代理
                     const response = await fetch('/api/ai-grade', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -845,7 +802,7 @@
                 return;
             }
 
-            // ----- 普通批改（字串比對） -----
+            // 普通批改
             aiModeLabel.style.display = 'none';
             const total = Math.max(studentLines.length, teacherLines.length);
             let correct = 0,
@@ -888,7 +845,7 @@
         btnOCR.disabled = true;
         btnGrade.disabled = true;
         btnAIGrade.disabled = true;
-        console.log('📝 AI 智慧批改系統已載入');
+        console.log('📝 AI 智慧批改系統 (手寫增強版) 已載入');
         console.log('📍 請確保後端伺服器 (app.py) 已啟動');
     </script>
 

@@ -7,6 +7,8 @@ import json
 import base64
 from PIL import Image
 import io
+import numpy as np
+import easyocr
 
 app = Flask(__name__)
 CORS(app)
@@ -17,25 +19,17 @@ if not NVIDIA_API_KEY:
     print("⚠️ 警告：未設定 NVIDIA_API_KEY 環境變數")
 
 # ================================================================
-# PaddleOCR 初始化（延遲載入，節省記憶體）
+# EasyOCR 初始化（延遲載入）
 # ================================================================
 ocr = None
 
 def get_ocr():
-    """延遲載入 PaddleOCR，只有在需要時才載入"""
     global ocr
     if ocr is None:
-        from paddleocr import PaddleOCR
-        print("📦 正在載入 PaddleOCR...")
-        ocr = PaddleOCR(
-            use_angle_cls=True,        # 啟用方向分類
-            lang='ch',                 # 中文
-            show_log=False,            # 關閉日誌
-            use_gpu=False,             # Render 免費方案無 GPU
-            enable_mkldnn=True,        # 加速 CPU 推理
-            cpu_threads=2
-        )
-        print("✅ PaddleOCR 載入完成")
+        print("📦 正在載入 EasyOCR (支援中文手寫)...")
+        # 'ch_sim' 是簡體中文（也支援大多數繁體字），'en' 是英文
+        ocr = easyocr.Reader(['ch_sim', 'en'], gpu=False)
+        print("✅ EasyOCR 載入完成")
     return ocr
 
 # ================================================================
@@ -46,36 +40,30 @@ def index():
     return render_template('index.html')
 
 # ================================================================
-# API: OCR 辨識（使用 PaddleOCR）
+# API: OCR 辨識（使用 EasyOCR）
 # ================================================================
 @app.route('/api/ocr', methods=['POST'])
 def ocr_image():
     try:
-        # 接收前端傳來的圖片（Base64）
         data = request.get_json()
         image_data = data.get('image')
         if not image_data:
             return jsonify({'error': '缺少圖片數據'}), 400
 
-        # 去除 Base64 前綴
         if ',' in image_data:
             image_data = image_data.split(',')[1]
 
-        # 解碼 Base64
         image_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(image_bytes))
 
-        # 呼叫 PaddleOCR 辨識
+        # 轉為 numpy 陣列供 EasyOCR 使用
+        img_np = np.array(image)
+
         ocr_engine = get_ocr()
-        result = ocr_engine.ocr(image, cls=True)
+        # detail=0 表示只回傳文字，不返回座標
+        result = ocr_engine.readtext(img_np, detail=0)
 
-        # 解析結果，提取文字
-        extracted_text = []
-        if result and result[0]:
-            for line in result[0]:
-                extracted_text.append(line[1][0])  # line[1][0] 是辨識出的文字
-
-        full_text = '\n'.join(extracted_text)
+        full_text = '\n'.join(result)
         return jsonify({'text': full_text})
 
     except Exception as e:
@@ -83,7 +71,7 @@ def ocr_image():
         return jsonify({'error': str(e)}), 500
 
 # ================================================================
-# API: AI 智能批改
+# API: AI 智能批改（保持不變）
 # ================================================================
 @app.route('/api/ai-grade', methods=['POST'])
 def ai_grade():
@@ -97,7 +85,6 @@ def ai_grade():
     if not student_answers or not teacher_answers:
         return jsonify({'error': '缺少答案'}), 400
 
-    # 組合提示詞
     prompt = "你是一個嚴格且專業的老師，請逐題判斷學生的答案是否正確（考量語意是否正確，而非逐字完全相同），並給予簡短的評語（每個答案一句話）。\n\n"
     for i, (s, t) in enumerate(zip(student_answers, teacher_answers), 1):
         prompt += f"第{i}題 標準答案：{t}，學生答案：{s}\n"
@@ -128,7 +115,6 @@ def ai_grade():
         result = response.json()
         ai_message = result['choices'][0]['message']['content']
 
-        # 解析 JSON
         json_match = re.search(r'\{.*\}', ai_message, re.DOTALL)
         if json_match:
             parsed = json.loads(json_match.group())
